@@ -1,26 +1,36 @@
-name: Daily Automation Run
+name: Run Tests and Notify on Slack
 
 on:
   schedule:
-    - cron: '0 0 * * *'   # Runs at midnight UTC every day
+    - cron: '0 17 * * *'  # Runs every day at 5:00 PM UTC
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   test:
-    runs-on: self-hosted
+    runs-on: self-hosted  # Using your self-hosted runner
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '9.0'  # Adjust based on your .NET version
+      - name: Set up dependencies
+        run: |
+          npm install  # Replace with the setup command for your project
 
-      - name: Install dependencies
-        run: dotnet restore
+      - name: Run Tests
+        id: test_step
+        run: |
+          npm test  # Replace with your actual test command
 
-      - name: Build solution
-        run: dotnet build --no-restore
+      - name: Send Slack Notification on Failure
+        if: failure()  # Only runs if the test fails
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"🚨 *Test Failure Alert!* Your tests have failed. Check GitHub Actions for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' "$SLACK_WEBHOOK_URL"
 
-      - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+      - name: Send Slack Notification on Success
+        if: success()  # Only runs if the test succeeds
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"✅ *Test Success!* All tests passed successfully. 🎉"}' "$SLACK_WEBHOOK_URL"

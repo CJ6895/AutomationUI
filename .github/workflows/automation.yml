@@ -10,18 +10,22 @@ jobs:
     runs-on: self-hosted  # Using your self-hosted runner
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '9.0.x'  # Update this to match your project
+          dotnet-version: '6.0.x'  # Use the .NET version you need
 
-      - name: Restore NuGet Packages
+      - name: Restore dependencies
         run: dotnet restore
 
-      - name: Run MSTest
-        run: dotnet test --logger trx
+      - name: Build the solution
+        run: dotnet build --configuration Release
+
+      - name: Run Tests
+        run: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
+        
       - name: Send Slack Notification on Failure
         if: failure()  # Only runs if the test fails
         env:

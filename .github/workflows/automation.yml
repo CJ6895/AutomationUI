@@ -14,13 +14,12 @@ jobs:
 
       - name: Set up dependencies
         run: |
-          npm install  # Replace with the setup command for your project
-          working-directory: ./AutomationUI  # Change this to the actual folder of your project
+          dotnet restore  # Restores the dependencies and tools of a project
 
       - name: Run Tests
         id: test_step
         run: |
-          npm test  # Replace with your actual test command
+          dotnet test  # Runs the tests using the test runner specified in the project
 
       - name: Send Slack Notification on Failure
         if: failure()  # Only runs if the test fails

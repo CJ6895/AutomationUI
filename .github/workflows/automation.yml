@@ -60,5 +60,6 @@ jobs:
         if: success()
         uses: rtCamp/action-slack-notify@v2
         with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          message: "✅ *Test Success!* All tests passed successfully. 🎉"
+          args: '{"text":"✅ *Test Success!* All tests passed successfully. 🎉"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

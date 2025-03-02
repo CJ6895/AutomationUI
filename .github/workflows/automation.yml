@@ -10,10 +10,10 @@ jobs:
     runs-on: self-hosted  # Using your self-hosted runner
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'  # Use the .NET version you need
 
@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Tests
         run: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
-        
+
       - name: Send Slack Notification on Failure
         if: failure()  # Only runs if the test fails
         env:

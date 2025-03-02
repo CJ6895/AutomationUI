@@ -12,15 +12,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up dependencies
-        run: |
-          dotnet restore  # Restores the dependencies and tools of a project
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'  # Update this to match your project
 
-      - name: Run Tests
-        id: test_step
-        run: |
-          dotnet test  # Runs the tests using the test runner specified in the project
+      - name: Restore NuGet Packages
+        run: dotnet restore
 
+      - name: Run MSTest
+        run: dotnet test --logger trx
       - name: Send Slack Notification on Failure
         if: failure()  # Only runs if the test fails
         env:

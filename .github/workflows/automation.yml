@@ -15,6 +15,7 @@ jobs:
       - name: Set up dependencies
         run: |
           npm install  # Replace with the setup command for your project
+          working-directory: ./AutomationUI  # Change this to the actual folder of your project
 
       - name: Run Tests
         id: test_step

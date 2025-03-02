@@ -12,10 +12,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Cache .NET SDK
+        uses: actions/cache@v3
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-dotnet-
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'  # Use the .NET version you need
+          dotnet-version: '9.0.x'
 
       - name: Restore dependencies
         run: dotnet restore

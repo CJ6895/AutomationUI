@@ -58,5 +58,7 @@ jobs:
 
       - name: Send Slack Notification on Success
         if: success()
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"✅ *Test Success!* All tests passed successfully. 🎉"}' "$SLACK_WEBHOOK_URL" || echo "Failed to send Slack notification"
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          message: "✅ *Test Success!* All tests passed successfully. 🎉"

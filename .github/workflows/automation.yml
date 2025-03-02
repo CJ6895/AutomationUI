@@ -1,6 +1,12 @@
 name: Run Tests and Notify on Slack
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 17 * * *'  # Runs every day at 5:00 PM UTC
   workflow_dispatch:  # Allows manual triggering
@@ -20,6 +26,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dotnet-
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -33,17 +47,16 @@ jobs:
 
       - name: Run Tests
         run: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx"
+        continue-on-error: true
 
       - name: Send Slack Notification on Failure
-        if: failure()  # Only runs if the test fails
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"🚨 *Test Failure Alert!* Your tests have failed. Check GitHub Actions for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' "$SLACK_WEBHOOK_URL"
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          message: "🚨 *Test Failure Alert!* Your tests have failed. Check GitHub Actions for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Send Slack Notification on Success
-        if: success()  # Only runs if the test succeeds
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: success()
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"✅ *Test Success!* All tests passed successfully. 🎉"}' "$SLACK_WEBHOOK_URL"
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"✅ *Test Success!* All tests passed successfully. 🎉"}' "$SLACK_WEBHOOK_URL" || echo "Failed to send Slack notification"

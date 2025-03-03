@@ -28,6 +28,7 @@ namespace Tests.UI.Pages;
                     Browser.FindElement(UserNameField).SendKeys(userName);
                     Browser.FindElement(PasswordField).SendKeys(password);
                     Browser.FindElement(LoginButton).Click();
+                    BaseWait.WaitForElementToBeVisible(UserDropdown, (int)WaitTime.Medium);
                 }
                 else
                 {

@@ -1,12 +1,12 @@
 
-
-namespace Tests.UI;
-
-public abstract class BasePage
+namespace Tests.UI
 {
-    public TPage NavigateViaDirectLink<TPage>(string url) where TPage : BasePage, new()
+    public abstract class BasePage
     {
-        Browser.Visit(url);
-        return new TPage();
+        public TPage NavigateViaDirectLink<TPage>(string url) where TPage : BasePage, new()
+        {
+            Browser.Visit(url);
+            return new TPage();
+        }
     }
 }

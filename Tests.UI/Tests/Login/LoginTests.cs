@@ -15,7 +15,7 @@ public class LoginTests : BaseTests<LoginPage>
     [TestInitialize]
     public void TestInitialize()
     {
-        if (TestContext.TestName == "VerifyLogin_GivenInvalidCredentials_Displays")
+        if (TestContext.TestName == "VerifyLogin_GivenInvalidCredentials_DisplaysErrorMessage")
         {
             return;
         }
@@ -62,7 +62,7 @@ public class LoginTests : BaseTests<LoginPage>
         }
 
     [TestMethod]
-    public void VerifyLogin_GivenInvalidCredentials_Displays()
+    public void VerifyLogin_GivenInvalidCredentials_DisplaysErrorMessage()
     {
         // Arrange
         const string errorMessage = "The account sign-in was incorrect";

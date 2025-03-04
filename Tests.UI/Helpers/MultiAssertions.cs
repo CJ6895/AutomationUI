@@ -4,68 +4,65 @@ namespace Tests.UI.Helpers;
 
 public static class MultiAssertions
 {
-    private static readonly List<string> _failedMessages;
-
-    public static string FailedAssertions => FormatFailedAssertions();
-
-    public static bool HasAssertions => _failedMessages.Count > 0;
-
-    static MultiAssertions()
-    {
-        _failedMessages = new List<string>();
-    }
-
     public static void AssertAll(params Action[] assertions)
     {
+        var failedMessages = new List<string>();
         TestLogger.LogMessage("Starting assertions...");
-        _failedMessages.Clear();
 
         foreach (var assertion in assertions)
         {
             try
             {
                 assertion();
-                TestLogger.LogMessage("Assertion passed.");
+                TestLogger.LogMessage("✅ Assertion passed.");
             }
             catch (Exception ex)
             {
-                TestLogger.LogMessage($"Assertion failed: {ex.Message}");
-                _failedMessages.Add(ex.Message);  
+                TestLogger.LogMessage($"❌ Assertion failed: {ex.Message}");
+                failedMessages.Add(ex.Message);
             }
         }
 
-        if (_failedMessages.Any())
+        // 🚨 Ensure that a failed assertion causes the test to fail!
+        if (failedMessages.Any())
         {
-            TestLogger.LogMessage($"One or more assertions failed: {_failedMessages.Count} failures.");
-            throw new AssertFailedException($"One or more assertions failed:\n{string.Join("\n", _failedMessages)}");
+            TestLogger.LogMessage($"❌ One or more assertions failed: {failedMessages.Count} failures.");
+            throw new AssertFailedException($"One or more assertions failed:\n{string.Join("\n", failedMessages)}");
         }
     }
 
-    public static string AreEqual(string expectedResult, string actualResult)
+
+
+    public static void AreEqual(string expected, string actual)
     {
-        if (expectedResult != actualResult)
-            _failedMessages.Add($"Expected: <{expectedResult}>. Actual: <{actualResult}>");
-        return FailedAssertions;
+        if (expected != actual)
+            throw new AssertFailedException($"Expected: <{expected}>. Actual: <{actual}>");
     }
 
-    public static string IsModuleDisplayed(bool isModuleDisplayed, string moduleName)
+    public static void IsFalse(bool condition, string message = "Condition was expected to be false but was true.")
     {
-        if (!isModuleDisplayed)
-            _failedMessages.Add($"{moduleName} module was not displayed.");
-        return FailedAssertions;
+        if (condition)
+            throw new AssertFailedException(message);
     }
 
-    public static void AddFailedMessage(string message)
+    public static void IsTrue(bool condition, string message = "Condition was expected to be true but was false.")
     {
-        _failedMessages.Add(message);
+        if (!condition)
+            throw new AssertFailedException(message);
     }
 
-    private static string FormatFailedAssertions()
+    public static void IsModuleDisplayed(bool isDisplayed, string moduleName)
     {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < _failedMessages.Count; i++)
+        if (!isDisplayed)
+            throw new AssertFailedException($"{moduleName} module was not displayed.");
+    }
+
+    private static string FormatFailedAssertions(List<string> failedMessages)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < failedMessages.Count; i++)
         {
-            sb.Append($"{Environment.NewLine}Issue #{i + 1}:{_failedMessages[i]}{Environment.NewLine}");
+            sb.AppendLine($"Issue #{i + 1}: {failedMessages[i]}");
         }
         return sb.ToString();
     }

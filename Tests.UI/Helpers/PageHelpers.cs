@@ -5,14 +5,14 @@ namespace Tests.UI.Helpers;
     {
         public static string GetPageTitleText()
         {
-            return Browser.GetPageTitle().Text;
+            return Browser.GetPageTitle().Find().Text;
         }
 
         public static void SelectInDropdown(FindBy dropdownMenu, string option)
         {
             // Find the parent element (dropdown) and click on it
-            Browser.FindElement(dropdownMenu).Click();
-            var dropdownOptions = Browser.FindElements(FindBy.TagName(Tag.li));
+            dropdownMenu.Find().ClickElement();
+            var dropdownOptions = Browser.FindAll(FindBy.TagName(Tag.li));
             
             // Loop through each dropdown option and click the one that matches the provided option
             foreach (var item in dropdownOptions)

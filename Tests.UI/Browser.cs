@@ -1,11 +1,8 @@
-
-using System.Collections.ObjectModel;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Tests.UI.Helpers;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using OpenQA.Selenium.Internal;
 
 namespace Tests.UI;
 
@@ -36,29 +33,30 @@ public static class Browser
 
     public static void Visit(string url)
     {
-        _instance.Navigate().GoToUrl(url);
+        Instance.Navigate().GoToUrl(url);
     }
 
     public static void CloseBrowser()
     {
-        try { _instance.Quit(); }
+        try { Instance.Quit(); }
         catch { }
 
-        try { _instance.Close(); }
+        try { Instance.Close(); }
         catch { }
 
         try { _driverService.Dispose(); }
         catch { }
     }
 
-    public static IWebElement GetPageTitle() => FindElement(PageTitle);
+    public static FindBy GetPageTitle() => PageTitle;
 
-    public static IWebElement GetElement(FindBy element) => _instance.FindElement(element.By);
+    public static IWebElement GetElement(FindBy element) => Instance.FindElement(element.By);
 
-    public static string GetElementText(FindBy element) => FindElement(element).Text;
+    public static string GetElementText(FindBy element) => Find(element).Text;
     public static bool IsElementDisplayed(FindBy element)
     {
-        return FindElement(element).Displayed;
+        BaseWait.WaitForElementToBeVisible(element, (int)WaitTime.Medium);
+        return Find(element).Displayed;
     }
 
     public static bool IsPageTitleDisplayed()
@@ -72,7 +70,6 @@ public static class Browser
         Instance.Manage().Window.Maximize();
         string url = ProjectSetup.Instance.LaunchUrl;
         Instance.Navigate().GoToUrl(url);
-
 
         if (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute))
         {
@@ -92,28 +89,39 @@ public static class Browser
 
     public static void SwitchToMainWindow()
     {
-        _instance.SwitchTo().Window(_mainWindow);
+        if (Instance.WindowHandles.Count > 1)
+            Instance.SwitchTo().Window(_mainWindow);
     }
 
-    public static void SwitchToTab(int tabIndex)
+    public static void SwitchToFirstTab()
     {
-        _instance.SwitchTo().Window(_instance.WindowHandles[tabIndex]);
+        Instance.SwitchTo().Window(Instance.WindowHandles.First());
     }
 
-    public static IWebElement FindElement(FindBy findBy)
+    public static void SwitchToLastTab()
     {
-        return _instance.FindElement(findBy.By);
+        Instance.SwitchTo().Window(Instance.WindowHandles.Last());
+    }
+
+    public static void CloseTab()
+    {
+        Instance.Close();
+    }
+
+    public static IWebElement Find(this FindBy findBy)
+    {
+        return Instance.FindElement(findBy.By);
     }
 
     public static IWebElement FindElementWithShortWait(FindBy findBy)
     {
-        BaseWait.WaitForElementToBeVisible(findBy, (int)WaitTime.Medium);
-        return _instance.FindElement(findBy.By);
+        BaseWait.WaitForElementToBeVisible(findBy, (int)WaitTime.Short);
+        return Instance.FindElement(findBy.By);
     }
 
-    public static ReadOnlyCollection<IWebElement> FindElements(FindBy findBy)
+    public static List<IWebElement> FindAll(FindBy findBy)
     {
-        return _instance.FindElements(findBy.By);
+        return Instance.FindElements(findBy.By).ToList();
     }
 
     public static List<IWebElement> FindChildElementsBy(this IWebElement parentElement, FindBy findBy, int timeOut = (int)WaitInSeconds.Thirty)
@@ -138,25 +146,32 @@ public static class Browser
         return children;
     }
 
-    public static void Click(FindBy findBy)
+    public static void ClickElement(this IWebElement element)
     {
-        FindElement(findBy).Click();
+        element.Click();
     }
-
-    public static void ClickWithJavaScript(FindBy findBy)
+    
+        public static void ClickElementWithJS(this IWebElement element)
     {
-        var element = FindElement(findBy);
-        ((IJavaScriptExecutor)_instance).ExecuteScript("arguments[0].click();", element);
+        try
+        {
+            IJavaScriptExecutor executor = (IJavaScriptExecutor)_instance;
+            executor.ExecuteScript("arguments[0].click();", element);
+        }
+        catch (Exception ex)
+        {
+            FailTest.Fail($"Unable to successfully click element via JavaScript with locator", ex);
+        }
     }
 
     public static void ClickWithShortWait(FindBy findBy)
     {
-        BaseWait.WaitForElementToBeClickable(findBy.By, (int)WaitTime.Medium);
-        Click(findBy);
+        BaseWait.WaitForElementToBeClickable(findBy, (int)WaitTime.Medium);
+        findBy.Find().ClickElement();
     }
 
-    public static void TypeText(FindBy findBy, string text)
+    public static void TypeText(this FindBy findBy, string text)
     {
-        FindElement(findBy).SendKeys(text);
+        findBy.Find().SendKeys(text);
     }
 }

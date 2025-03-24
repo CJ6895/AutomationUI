@@ -1,8 +1,7 @@
 using OpenQA.Selenium;
-using Tests.UI;
 using Tests.UI.Helpers;
 
-namespace Tests.UI.Pages;
+namespace Tests.UI.Pages.Login;
 
     public class LoginPage : BasePage
     {
@@ -13,11 +12,10 @@ namespace Tests.UI.Pages;
         FindBy UserDropdown => FindBy.CssSelector(".admin-user.admin__action-dropdown-wrap");
         FindBy LoggedOutMessage => FindBy.CssSelector("div[data-ui-id='messages-message-success']");
         FindBy LoginErrorMessage => FindBy.CssSelector("div[data-ui-id='messages-message-error']");
-
         #endregion
 
-        public IWebElement GetLoggedOutMessage() => Browser.FindElement(LoggedOutMessage);
-        public IWebElement GetLoginErrorMessage() => Browser.FindElement(LoginErrorMessage);
+        public IWebElement GetLoggedOutMessage() => LoggedOutMessage.Find();
+        public IWebElement GetLoginErrorMessage() => LoginErrorMessage.Find();
 
         public void Login(string userName, string password)
         {
@@ -25,9 +23,9 @@ namespace Tests.UI.Pages;
             {
                 if (Browser.IsElementDisplayed(UserNameField))
                 {
-                    Browser.FindElement(UserNameField).SendKeys(userName);
-                    Browser.FindElement(PasswordField).SendKeys(password);
-                    Browser.FindElement(LoginButton).Click();
+                    UserNameField.TypeText(userName);
+                    PasswordField.TypeText(password);
+                    Browser.Find(LoginButton).Click();
                     BaseWait.WaitForElementToBeVisible(UserDropdown, (int)WaitTime.Medium);
                 }
                 else
@@ -63,7 +61,7 @@ namespace Tests.UI.Pages;
 
         public bool IsUserLoggedIn()
         {
-            return Browser.GetPageTitle().Displayed;
+            return Browser.Find(Browser.GetPageTitle()).Displayed;
         }
 
         public bool IsUserLoggedOut()

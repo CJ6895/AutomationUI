@@ -1,5 +1,6 @@
-using Tests.UI.Pages;
+using Tests.UI.Pages.Login;
 using Tests.UI.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests.UI.Tests.Login;
 
@@ -9,7 +10,7 @@ public class LoginTests : BaseTests<LoginPage>
     [ClassInitialize]
     public static void ClassInitialize(TestContext context)
     {
-        Initialize(context);
+        LoginClassInitialize(context);
     }
 
     [TestInitialize]
@@ -21,6 +22,7 @@ public class LoginTests : BaseTests<LoginPage>
         }
 
         Page.Login(ProjectSetup.Instance.UserName, ProjectSetup.Instance.Password);
+        TestLogger.LogMessage($"{TestContext.TestName} started successfully");
     }
 
     [TestCleanup]
@@ -45,21 +47,21 @@ public class LoginTests : BaseTests<LoginPage>
         );
     }
 
-        [TestMethod]
-        public void VerifyLogOut_GivenUserDropdownSelection_DisplaysSuccessMessage()
-        {
-            // Arrange
-            const string successMessage = "You have logged out.";
+    [TestMethod]
+    public void VerifyLogOut_GivenUserDropdownSelection_DisplaysSuccessMessage()
+    {
+        // Arrange
+        const string successMessage = "You have logged out.";
 
-            // Act
-            Page.LogOut();
+        // Act
+        Page.LogOut();
 
-            // Assert
-            MultiAssertions.AssertAll(
-                () => Assert.IsTrue(Page.IsUserLoggedOut(), "Login button is not displayed"),
-                () => Assert.AreEqual(successMessage, Page.GetLoggedOutMessage().Text, "Logout message is different than expected")
-            );
-        }
+        // Assert
+        MultiAssertions.AssertAll(
+            () => Assert.IsTrue(Page.IsUserLoggedOut(), "Login button is not displayed"),
+            () => Assert.AreEqual(successMessage, Page.GetLoggedOutMessage().Text, "Logout message is different than expected")
+        );
+    }
 
     [TestMethod]
     public void VerifyLogin_GivenInvalidCredentials_DisplaysErrorMessage()

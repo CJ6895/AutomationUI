@@ -1,4 +1,5 @@
 ﻿using Tests.UI.Helpers;
+using Tests.UI.Pages.Login;
 
 namespace Tests.UI.Tests;
 
@@ -11,7 +12,7 @@ public abstract class BaseTests<T> where T : BasePage, new()
 
     protected BaseTests() => Page = new T();
 
-    public static void Initialize(TestContext context)
+    public static void LoginClassInitialize(TestContext context)
     {
         try
         {
@@ -21,6 +22,21 @@ public abstract class BaseTests<T> where T : BasePage, new()
         {
             TestLogger.LogMessage($"Error occurred while launching the application: {ex.Message}");
         }
+    }
+
+     public static void Initialize(TestContext context)
+    {
+        try
+        {
+            Browser.LaunchApplication();
+        }
+        catch (Exception ex)
+        {
+            TestLogger.LogMessage($"Error occurred while launching the application: {ex.Message}");
+        }
+        LoginPage _loginPage = new LoginPage();
+        _loginPage.Login(ProjectSetup.Instance.UserName, ProjectSetup.Instance.Password);
+        TestLogger.LogMessage("User is logged in");
     }
 
     public static void Cleanup()
